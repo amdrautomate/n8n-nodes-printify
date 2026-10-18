@@ -74,7 +74,7 @@ When you activate the workflow the trigger registers the webhooks in Printify wi
 
 ## Compatibility
 
-Tested with n8n 1.80 and later. Requires Node.js 20.15 or newer, matching n8n's own requirement.
+Tested end to end against the live Printify API with n8n 2.43 (node and trigger). Requires Node.js 20.15 or newer, matching n8n's own requirement.
 
 ## Resources
 
