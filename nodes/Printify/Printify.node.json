@@ -7,12 +7,12 @@
 	"resources": {
 		"credentialDocumentation": [
 			{
-				"url": "https://github.com/Empower21/n8n-nodes-printify#credentials"
+				"url": "https://github.com/amdrautomate/n8n-nodes-printify#credentials"
 			}
 		],
 		"primaryDocumentation": [
 			{
-				"url": "https://github.com/Empower21/n8n-nodes-printify#readme"
+				"url": "https://github.com/amdrautomate/n8n-nodes-printify#readme"
 			}
 		]
 	}

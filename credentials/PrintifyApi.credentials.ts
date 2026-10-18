@@ -13,7 +13,7 @@ export class PrintifyApi implements ICredentialType {
 
 	icon: Icon = { light: 'file:../icons/printify.svg', dark: 'file:../icons/printify.dark.svg' };
 
-	documentationUrl = 'https://github.com/Empower21/n8n-nodes-printify#credentials';
+	documentationUrl = 'https://github.com/amdrautomate/n8n-nodes-printify#credentials';
 
 	properties: INodeProperties[] = [
 		{

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "n8n community node for Printify: manage shops, catalog blueprints, products, orders, image uploads and webhooks in the print-on-demand platform",
   "license": "MIT",
-  "homepage": "https://github.com/Empower21/n8n-nodes-printify",
+  "homepage": "https://github.com/amdrautomate/n8n-nodes-printify",
   "keywords": [
     "n8n-community-node-package",
     "n8n",
@@ -20,7 +20,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Empower21/n8n-nodes-printify.git"
+    "url": "https://github.com/amdrautomate/n8n-nodes-printify.git"
   },
   "scripts": {
     "build": "n8n-node build",
@@ -56,7 +56,7 @@
     "n8n-workflow": "*"
   },
   "bugs": {
-    "url": "https://github.com/Empower21/n8n-nodes-printify/issues"
+    "url": "https://github.com/amdrautomate/n8n-nodes-printify/issues"
   },
   "engines": {
     "node": ">=20.15"
