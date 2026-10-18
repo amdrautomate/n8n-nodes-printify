@@ -1,0 +1,19 @@
+{
+	"node": "@amdrautomate/n8n-nodes-printify.printify",
+	"nodeVersion": "1.0",
+	"codexVersion": "1.0",
+	"categories": ["Sales"],
+	"alias": ["Print on demand", "POD", "Merch", "Dropshipping"],
+	"resources": {
+		"credentialDocumentation": [
+			{
+				"url": "https://github.com/Empower21/n8n-nodes-printify#credentials"
+			}
+		],
+		"primaryDocumentation": [
+			{
+				"url": "https://github.com/Empower21/n8n-nodes-printify#readme"
+			}
+		]
+	}
+}
