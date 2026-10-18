@@ -1,6 +1,6 @@
 import type { INodeProperties } from 'n8n-workflow';
 import { shopSelect, WEBHOOK_TOPICS, webhookSelect } from '../shared/descriptions';
-import { deletedOutput } from '../shared/routing';
+import { addWebhookHost, deletedOutput } from '../shared/routing';
 
 const resource = ['webhook'];
 const shopBase = '=/v1/shops/{{$parameter.shopId}}/webhooks';
@@ -28,6 +28,7 @@ export const webhookDescription: INodeProperties[] = [
 				description: 'Remove a webhook subscription',
 				routing: {
 					request: { method: 'DELETE', url: `${webhookBase}.json` },
+					send: { preSend: [addWebhookHost] },
 					output: { postReceive: [deletedOutput] },
 				},
 			},

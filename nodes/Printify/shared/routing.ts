@@ -1,12 +1,73 @@
 import {
+	NodeApiError,
 	NodeOperationError,
 	type IDataObject,
 	type IExecuteSingleFunctions,
 	type IHttpRequestOptions,
+	type IN8nHttpFullResponse,
 	type INodeExecutionData,
 	type INodeProperties,
+	type INodePropertyOptions,
+	type JsonObject,
 	type PostReceiveAction,
 } from 'n8n-workflow';
+import { printifyApiRequest } from './transport';
+
+/**
+ * Printify answers errors as { message: "Operation failed.", errors: { reason: "..." } }.
+ * n8n's default handling would show only "Bad request", so every operation runs this first
+ * (the node sets `ignoreHttpStatusErrors` and raises here with Printify's own reason).
+ */
+export async function raisePrintifyError(
+	this: IExecuteSingleFunctions,
+	items: INodeExecutionData[],
+	response: IN8nHttpFullResponse,
+): Promise<INodeExecutionData[]> {
+	const status = response.statusCode ?? 200;
+	if (status < 400) {
+		// With a postReceive chain present, n8n hands over the body as one item. Mirror its
+		// default behaviour and split array responses (shops, providers, webhooks) into items.
+		return Array.isArray(response.body)
+			? (response.body as IDataObject[]).map((json) => ({ json }))
+			: items;
+	}
+
+	const body = (typeof response.body === 'object' && response.body !== null
+		? response.body
+		: { message: String(response.body ?? '') }) as IDataObject;
+	const errors = (body.errors as IDataObject | undefined) ?? {};
+	const reason = (errors.reason as string | undefined) ?? (body.error as string | undefined);
+	const message = (body.message as string | undefined) ?? '';
+
+	const summary: Record<number, string> = {
+		401: 'Printify rejected the token. Check the Printify API credential',
+		403: 'The token is missing the scope this operation needs',
+		404: 'Printify could not find that resource. Check the IDs and the selected shop',
+		429: 'Printify rate limit reached (600 requests per minute, 100 for catalog). Try again shortly',
+	};
+
+	throw new NodeApiError(this.getNode(), body as JsonObject, {
+		httpCode: String(status),
+		message: reason ?? summary[status] ?? (message || `Printify returned status ${status}`),
+		description: reason ? message || summary[status] : undefined,
+	});
+}
+
+/** Prepends the Printify error check to every operation's postReceive chain. */
+export function withPrintifyErrors(properties: INodeProperties[]): INodeProperties[] {
+	for (const property of properties) {
+		if (property.name !== 'operation' || !Array.isArray(property.options)) continue;
+		for (const option of property.options as INodePropertyOptions[]) {
+			if (!option.routing) continue;
+			option.routing.output = option.routing.output ?? {};
+			option.routing.output.postReceive = [
+				raisePrintifyError,
+				...(option.routing.output.postReceive ?? []),
+			];
+		}
+	}
+	return properties;
+}
 
 /**
  * Printify lists are page based: { data: [...], current_page, last_page, ... }.
@@ -307,6 +368,33 @@ export async function buildProductUpdateBody(
 		throw new NodeOperationError(this.getNode(), "Add at least one field under 'Update Fields'");
 	}
 	requestOptions.body = body;
+	return requestOptions;
+}
+
+/**
+ * preSend for Webhook > Delete. Printify only deletes a webhook when the `host` query parameter
+ * matches the webhook URL's hostname, so look the webhook up and add it.
+ */
+export async function addWebhookHost(
+	this: IExecuteSingleFunctions,
+	requestOptions: IHttpRequestOptions,
+): Promise<IHttpRequestOptions> {
+	const shopId = this.getNodeParameter('shopId', '', { extractValue: true }) as string;
+	const webhookId = this.getNodeParameter('webhookId', '', { extractValue: true }) as string;
+	const webhooks = (await printifyApiRequest.call(
+		this,
+		'GET',
+		`/v1/shops/${shopId}/webhooks.json`,
+	)) as Array<{ id: string; url: string }>;
+	const match = webhooks.find((w) => String(w.id) === String(webhookId));
+	if (!match) {
+		throw new NodeOperationError(
+			this.getNode(),
+			`Webhook ${webhookId} was not found in shop ${shopId}`,
+			{ description: 'It may already be deleted. Use Webhook > Get Many to see what exists' },
+		);
+	}
+	requestOptions.qs = { ...(requestOptions.qs ?? {}), host: new URL(match.url).hostname };
 	return requestOptions;
 }
 

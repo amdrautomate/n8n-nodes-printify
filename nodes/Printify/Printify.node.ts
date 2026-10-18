@@ -14,6 +14,7 @@ import {
 	getUploads,
 	getWebhooks,
 } from './listSearch';
+import { withPrintifyErrors } from './shared/routing';
 import { PRINTIFY_BASE_URL, USER_AGENT } from './shared/transport';
 
 export class Printify implements INodeType {
@@ -44,8 +45,10 @@ export class Printify implements INodeType {
 				'Content-Type': 'application/json;charset=utf-8',
 				'User-Agent': USER_AGENT,
 			},
+			// Errors are raised by raisePrintifyError with Printify's own reason text.
+			ignoreHttpStatusErrors: true,
 		},
-		properties: [
+		properties: withPrintifyErrors([
 			{
 				displayName: 'Resource',
 				name: 'resource',
@@ -69,7 +72,7 @@ export class Printify implements INodeType {
 			...shopDescription,
 			...uploadDescription,
 			...webhookDescription,
-		],
+		]),
 	};
 
 	methods = {

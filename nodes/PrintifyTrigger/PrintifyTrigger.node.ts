@@ -144,12 +144,15 @@ export class PrintifyTrigger implements INodeType {
 			async delete(this: IHookFunctions): Promise<boolean> {
 				const data = staticData.call(this);
 				const ids = data.webhookIds ?? [];
+				// Printify only deletes a webhook when `host` matches the webhook URL's hostname.
+				const host = new URL(this.getNodeWebhookUrl('default') as string).hostname;
 				for (const id of ids) {
 					try {
 						await printifyApiRequest.call(
 							this,
 							'DELETE',
 							`/v1/shops/${shopId.call(this)}/webhooks/${id}.json`,
+							{ host },
 						);
 					} catch (error) {
 						// Usually already removed in Printify; log so a real failure is visible.
