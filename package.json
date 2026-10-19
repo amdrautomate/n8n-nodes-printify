@@ -22,6 +22,9 @@
     "type": "git",
     "url": "https://github.com/amdrautomate/n8n-nodes-printify.git"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "n8n-node build",
     "build:watch": "tsc --watch",
